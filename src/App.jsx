@@ -1,35 +1,55 @@
-import "./App.css";
-
-import Card from "@mui/material/Card";
-import { Box, Button, CardContent, TextField } from "@mui/material";
 import { useState } from "react";
 
+import "./App.css";
+import Card from "@mui/material/Card";
+
+import { Box, Button, CardContent, TextField } from "@mui/material";
+
 function App() {
-  const [emailInput, setEmailInput]=useState("")
-  const [password, setPassword]=useState("")
-  const [errors, setErrors]=useState([])
-  
-  function handlsubmit(){
-    const errorsArray = []
+  const initialValues = { mailAddress: "", password: "" };
+  const [formValues, setFormValues] = useState(initialValues);
+  const [formErrors, setFormErrors] = useState(initialValues);
 
-    if(emailInput === ""){
-      errorsArray.push("email")
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
+    if (name === "password" && 4 < value.length) {
+      setFormErrors({ mailAddress: formErrors.mailAddress, password: "" });
     }
+  };
 
-    if(password === ""){
-      errorsArray.push("password")
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setFormErrors(validate(formValues));
+  };
+
+  const validate = (values) => {
+    const errors = { mailAddress: "", password: "" };
+
+    const regex =
+      /^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/;
+    if (!values.mailAddress) {
+      errors.mailAddress = "メールアドレスを入力してください";
+    } else if (!regex.test(values.mailAddress)) {
+      errors.mailAddress = "正しいメールアドレスを入力してください";
     }
-
-    if(emailInput==="" || password === "") {
-      setErrors(errorsArray);
-      alert("未入力の項目があります")
-      return;
+    if (!values.password) {
+      errors.password = "パスワードを入力してください";
+    } else if (values.password.length < 4) {
+      errors.password = "4文字以上で入力してください";
+    } else {
+      errors.password = "";
     }
-
-    setErrors([]);
-
-    alert(`Email:${emailInput}\nPssword: ${password}`)
-  }
+    if (!values.mailAddress || !values.password) {
+      alert("未入力の項目があります");
+      return errors;
+    }
+    if (errors.mailAddress !== "" || errors.password !== "") {
+      return errors;
+    }
+    alert(`Email:${values.mailAddress}\nPssword: ${values.password}`);
+    return errors;
+  };
 
   return (
     <>
@@ -44,26 +64,28 @@ function App() {
           >
             <TextField
               required
-              error={errors.includes("email")}
-              helperText={errors.includes("email") ? "入力してください" : ""}
+              error={Boolean(formErrors.mailAddress)}
+              helperText={formErrors.mailAddress}
               label="Email"
               variant="standard"
               sx={{ marginBottom: "1rem" }}
-              onChange={(e) => setEmailInput(e.target.value)}
+              name="mailAddress"
+              onChange={(e) => handleChange(e)}
             />
             <TextField
-              id="standard-password-input"
               required
-              error={errors.includes("password")}
-              helperText={errors.includes("password") ? "入力してください" : ""}
+              error={Boolean(formErrors.password)}
+              helperText={formErrors.password}
               label="Password"
               type="password"
-              autoComplete="current-password"
               variant="standard"
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              onChange={(e) => handleChange(e)}
             />
           </Box>
-          <Button onClick={handlsubmit} variant="contained">ログイン</Button>
+          <Button variant="contained" onClick={handleSubmit}>
+            ログイン
+          </Button>
         </CardContent>
       </Card>
     </>
